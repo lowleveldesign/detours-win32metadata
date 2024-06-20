@@ -11,12 +11,6 @@ jobs:
     defaults:
       run:
         shell: cmd
-
-    strategy:
-      matrix:
-        arch:
-          - x64
-          - x86
     
     steps:
     - uses: actions/checkout@main
@@ -26,7 +20,7 @@ jobs:
 
     - uses: ilammy/msvc-dev-cmd@v1
       with:
-        arch: ${{ matrix.arch }}
+        arch: x86
         vsversion: 2022
 
     - name: Build detours
@@ -36,25 +30,37 @@ jobs:
     - name: Build the detours DLL
       working-directory: detours-dll
       run: |
-        mkdir bin.${{ matrix.arch }}
-        pushd bin.${{ matrix.arch }}
+        mkdir bin.X86
+        pushd bin.X86
         cl.exe /nologo /LD /TP /DUNICODE /DWIN32 /D_WINDOWS /EHsc /W4 /WX /Zi /O2 /Ob1 /DNDEBUG /Fodetours.obj /Fddetours.pdb ..\detours.cpp ^
-            /link /def:..\detours.def "%GITHUB_WORKSPACE%\detours\lib.${{ matrix.arch }}\detours.lib"
+            /link /def:..\detours.def "%GITHUB_WORKSPACE%\detours\lib.X86\detours.lib"
+        popd
 
-  build-metadata:
-    runs-on: windows-latest
-    defaults:
-      run:
-        shell: cmd
-    needs: build-native
+    - uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
+        vsversion: 2022
 
-    steps:
+    - name: Build detours
+      run: nmake
+      working-directory: detours
+
+    - name: Build the detours DLL
+      working-directory: detours-dll
+      run: |
+        mkdir bin.X64
+        pushd bin.X64
+        cl.exe /nologo /LD /TP /DUNICODE /DWIN32 /D_WINDOWS /EHsc /W4 /WX /Zi /O2 /Ob1 /DNDEBUG /Fodetours.obj /Fddetours.pdb ..\detours.cpp ^
+            /link /def:..\detours.def "%GITHUB_WORKSPACE%\detours\lib.X64\detours.lib"
+        popd
+
     - uses: actions/setup-dotnet@main
       with:
         dotnet-version: 8.0.x
+
     - name: Apply detours.h patch
       shell: pwsh
-      run: "@(Get-Content \".\\detours\\src\\detours.h\")[0..866+920..1234] | Set-Content \".\\detours\\include\\detours.h\""
+      run: "@(Get-Content \".\\detours\\src\\detours.h\")[0..866+920..1234] | Set-Content \".\\src\\detours.h\""
 
     - run: |
         Invoke-WebRequest -OutFile Update-AssemblyInfoVersionFiles.ps1 https://gist.githubusercontent.com/lowleveldesign/663de4e0d5a071f938e6f7c82d7ca9a0/raw/Update-AssemblyInfoVersionFiles.ps1
