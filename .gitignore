@@ -357,3 +357,5 @@ bin.X64/
 bin.X86/
 
 !src/options.rsp
+
+src/detours.h
