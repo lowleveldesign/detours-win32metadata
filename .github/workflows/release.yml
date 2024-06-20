@@ -1,0 +1,80 @@
+name: release
+
+on: 
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build-native:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: cmd
+
+    strategy:
+      matrix:
+        arch:
+          - x64
+          - x86
+    
+    steps:
+    - uses: actions/checkout@main
+      with:
+        fetch-depth: 1
+        submodules: true
+
+    - uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: ${{ matrix.arch }}
+        vsversion: 2022
+
+    - name: Build detours
+      run: nmake
+      working-directory: detours
+
+    - name: Build the detours DLL
+      working-directory: detours-dll
+      run: |
+        mkdir bin.${{ matrix.arch }}
+        pushd bin.${{ matrix.arch }}
+        cl.exe /nologo /LD /TP /DUNICODE /DWIN32 /D_WINDOWS /EHsc /W4 /WX /Zi /O2 /Ob1 /DNDEBUG /Fodetours.obj /Fddetours.pdb ..\detours.cpp ^
+            /link /def:..\detours.def "%GITHUB_WORKSPACE%\detours\lib.${{ matrix.arch }}\detours.lib"
+
+  build-metadata:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: cmd
+    needs: build-native
+
+    steps:
+    - uses: actions/setup-dotnet@main
+      with:
+        dotnet-version: 8.0.x
+    - name: Apply detours.h patch
+      shell: pwsh
+      run: "@(Get-Content \".\\detours\\src\\detours.h\")[0..866+920..1234] | Set-Content \".\\detours\\include\\detours.h\""
+
+    - run: |
+        Invoke-WebRequest -OutFile Update-AssemblyInfoVersionFiles.ps1 https://gist.githubusercontent.com/lowleveldesign/663de4e0d5a071f938e6f7c82d7ca9a0/raw/Update-AssemblyInfoVersionFiles.ps1
+        ./Update-AssemblyInfoVersionFiles.ps1
+      shell: pwsh
+
+    - name: Build detours metadata
+      working-directory: src
+      run: dotnet build -c Release -p:GeneratePackageOnBuild=true
+
+    # - run: dotnet nuget push -s https://api.nuget.org/v3/index.json -k "$NUGET_KEY" Detours.Win32Metadata.*.nupkg
+    #   env:
+    #     NUGET_KEY: ${{ secrets.NUGET_KEY }}
+    #   working-directory: ./src/bin/Release
+
+    - uses: actions/upload-artifact@main
+      with:
+        name: Detours.winmd
+        path: src/winmd/Detours.winmd
+
+    - uses: actions/upload-artifact@main
+      with:
+        path: src/bin/Release/Detours.Win32Metadata.*.nupkg

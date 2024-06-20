@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <ItemGroup>
+    <ProjectionMetadataWinmd Include="$(MSBuildThisFileDirectory)..\Detours.winmd" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(PublishAot)' == 'true'">
+    <DirectPInvoke Include="detours" />
+    <NativeLibrary Condition="'$(ProcessorArchitecture)' == 'x86'" Include="$(MSBuildThisFileDirectory)..\static\win-x86\native\detours.lib" />
+    <NativeLibrary Condition="'$(ProcessorArchitecture)' == 'amd64'" Include="$(MSBuildThisFileDirectory)..\static\win-x64\native\detours.lib" />
+  </ItemGroup>
+</Project>

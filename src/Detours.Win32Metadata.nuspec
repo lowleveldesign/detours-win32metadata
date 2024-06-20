@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<package>
+  <metadata>
+    <id>Detours.Win32Metadata</id>
+    <version>4.0.1.0</version>
+    <authors>Microsoft (packaged by Sebastian Solnica)</authors>
+    <title>Detours Library Win32 Metadata</title>
+    <summary>This packages provides the Win32 API surface of the Detours library as a winmd (Windows metadata) file.</summary>
+    <description>This packages provides the Win32 API surface of the Detours library as a winmd (Windows metadata) file. It is intended to be used as the basis for generating language-specific projections. It is not loadable as a CLR assembly.</description>
+    <projectUrl>https://github.com/lowleveldesign/detours-win32metadata</projectUrl>
+    <tags>Win32 Metadata Detours</tags>
+    <license type="expression">MIT</license>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <repository type="git" url="https://github.com/microsoft/detours.git" />
+    <dependencies>
+      <dependency id="Microsoft.Windows.SDK.Win32Metadata" version="61.0.15-preview" />
+    </dependencies>
+  </metadata>
+
+  <files>
+    <file src="$OutputWinmd$" target=""/>
+
+    <file src="Detours.Win32Metadata.props" target="build/Detours.Win32Metadata.props" />
+    <file src="Detours.Win32Metadata.props" target="buildTransitive/Detours.Win32Metadata.props" />
+
+    <!-- Native binaries -->
+    <file src="../detours/lib.X64/detours.lib" target="static/win-x64/native/detours.lib" />
+    <file src="../detours-dll/bin.X64/detours.dll" target="runtimes/win-x64/native/detours.dll" />
+    <file src="../detours/lib.X86/detours.lib" target="static/win-x86/native/detours.lib" />
+    <file src="../detours-dll/bin.X86/detours.dll" target="runtimes/win-x86/native/detours.dll" />
+  </files>
+</package>

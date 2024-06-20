@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.Windows.WinmdGenerator/0.61.15-preview">
+  <PropertyGroup>
+    <OutputWinmd>winmd/Detours.winmd</OutputWinmd>
+    <WinmdVersion>4.0.1</WinmdVersion>
+    <GenerateAssemblyVersionInfo>false</GenerateAssemblyVersionInfo>
+    <NuspecFile>Detours.Win32Metadata.nuspec</NuspecFile>
+    <NuspecProperties></NuspecProperties>
+    <NuspecBasePath>.</NuspecBasePath>
+    <NoWarn>$(NoWarn);NU5100;NU5104</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Headers Include="detours.h" />
+
+    <ImportLibs Include="../detours-dll/bin.X64/detours.lib">
+      <StaticLibs>detours=detours</StaticLibs>
+    </ImportLibs>
+
+    <Partition Include="main.cpp">
+      <TraverseFiles>@(Headers)</TraverseFiles>
+      <Namespace>Microsoft.Detours</Namespace>
+      <ExcludeFromCrossarch>true</ExcludeFromCrossarch>
+    </Partition>
+  </ItemGroup>
+
+  <Target Name="SetNuSpecProperties" BeforeTargets="GenerateNuspec">
+    <PropertyGroup>
+      <NuspecProperties>$(NuspecProperties);OutputWinmd=$(OutputWinmd)</NuspecProperties>
+    </PropertyGroup>
+  </Target>
+</Project>

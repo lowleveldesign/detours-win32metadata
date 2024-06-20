@@ -1,0 +1,71 @@
+name: build
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: cmd
+    
+    steps:
+    - uses: actions/checkout@main
+      with:
+        fetch-depth: 1
+        submodules: true
+
+    - uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x86
+        vsversion: 2022
+
+    - name: Build detours
+      run: nmake
+      working-directory: detours
+
+    - name: Build the detours DLL
+      working-directory: detours-dll
+      run: |
+        mkdir bin.X86
+        pushd bin.X86
+        cl.exe /nologo /LD /TP /DUNICODE /DWIN32 /D_WINDOWS /EHsc /W4 /WX /Zi /O2 /Ob1 /DNDEBUG /Fodetours.obj /Fddetours.pdb ..\detours.cpp ^
+            /link /def:..\detours.def "%GITHUB_WORKSPACE%\detours\lib.X86\detours.lib"
+        popd
+
+    - uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
+        vsversion: 2022
+
+    - name: Build detours
+      run: nmake
+      working-directory: detours
+
+    - name: Build the detours DLL
+      working-directory: detours-dll
+      run: |
+        mkdir bin.X64
+        pushd bin.X64
+        cl.exe /nologo /LD /TP /DUNICODE /DWIN32 /D_WINDOWS /EHsc /W4 /WX /Zi /O2 /Ob1 /DNDEBUG /Fodetours.obj /Fddetours.pdb ..\detours.cpp ^
+            /link /def:..\detours.def "%GITHUB_WORKSPACE%\detours\lib.X64\detours.lib"
+        popd
+
+    - uses: actions/setup-dotnet@main
+      with:
+        dotnet-version: 8.0.x
+    - name: Apply detours.h patch
+      shell: pwsh
+      run: "@(Get-Content \".\\detours\\src\\detours.h\")[0..866+920..1234] | Set-Content \".\\src\\detours.h\""
+
+    - name: Build detours metadata
+      working-directory: src
+      run: dotnet build -c Release -p:GeneratePackageOnBuild=true
+
+    - uses: actions/upload-artifact@main
+      with:
+        name: Detours.winmd
+        path: src/winmd/Detours.winmd
