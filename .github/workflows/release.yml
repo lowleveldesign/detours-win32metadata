@@ -75,7 +75,7 @@ jobs:
       shell: pwsh
       env:
         NUGET_KEY: ${{ secrets.NUGET_KEY }}
-        working-directory: src/bin/x64/Release
+      working-directory: src/bin/x64/Release
 
     - uses: actions/upload-artifact@main
       with:

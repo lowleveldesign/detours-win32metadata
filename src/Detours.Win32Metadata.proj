@@ -7,7 +7,6 @@
     <NuspecFile>Detours.Win32Metadata.nuspec</NuspecFile>
     <NuspecProperties></NuspecProperties>
     <NuspecBasePath>.</NuspecBasePath>
-    <PackageReadmeFile>../README.md</PackageReadmeFile>
     <NoWarn>$(NoWarn);NU5100;NU5104</NoWarn>
   </PropertyGroup>
 
