@@ -25,7 +25,7 @@ jobs:
 
     - name: Build detours
       run: nmake
-      working-directory: detours
+      working-directory: detours/src
 
     - name: Build the detours DLL
       working-directory: detours-dll
@@ -43,7 +43,7 @@ jobs:
 
     - name: Build detours
       run: nmake
-      working-directory: detours
+      working-directory: detours/src
 
     - name: Build the detours DLL
       working-directory: detours-dll
