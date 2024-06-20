@@ -6,7 +6,7 @@ on:
       - '*'
 
 jobs:
-  build-native:
+  build-and-publish:
     runs-on: windows-latest
     defaults:
       run:
@@ -71,10 +71,10 @@ jobs:
       working-directory: src
       run: dotnet build -c Release -p:GeneratePackageOnBuild=true
 
-    # - run: dotnet nuget push -s https://api.nuget.org/v3/index.json -k "$NUGET_KEY" Detours.Win32Metadata.*.nupkg
-    #   env:
-    #     NUGET_KEY: ${{ secrets.NUGET_KEY }}
-    #   working-directory: ./src/bin/Release
+    - run: dotnet nuget push -s https://api.nuget.org/v3/index.json -k "$NUGET_KEY" Detours.Win32Metadata.*.nupkg
+      env:
+        NUGET_KEY: ${{ secrets.NUGET_KEY }}
+        working-directory: ./src/bin/x64/Release
 
     - uses: actions/upload-artifact@main
       with:
@@ -83,4 +83,4 @@ jobs:
 
     - uses: actions/upload-artifact@main
       with:
-        path: src/bin/Release/Detours.Win32Metadata.*.nupkg
+        path: src/bin/x64/Release/Detours.Win32Metadata.*.nupkg

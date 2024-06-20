@@ -7,7 +7,7 @@ This project contains code to build and publish the [Detours library](https://gi
 Who is it for
 -------------
 
-FIXME
+This package will help people writing detours-based hooks in .NET.
 
 How to use it
 -------------
