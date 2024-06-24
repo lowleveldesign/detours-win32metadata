@@ -8,6 +8,8 @@
     <NuspecProperties></NuspecProperties>
     <NuspecBasePath>.</NuspecBasePath>
     <NoWarn>$(NoWarn);NU5100;NU5104</NoWarn>
+
+    <ShowEmitWinmdOutputDetails>true</ShowEmitWinmdOutputDetails>
   </PropertyGroup>
 
   <ItemGroup>

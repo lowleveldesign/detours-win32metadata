@@ -60,3 +60,4 @@ EXPORTS
 	DetourUpdateThread
 	DetourVirtualProtectSameExecute
 	DetourVirtualProtectSameExecuteEx
+	DetourFinishHelperProcess
