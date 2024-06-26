@@ -25,8 +25,10 @@
 
     <!-- Native binaries -->
     <file src="../detours/lib.X64/detours.lib" target="static/win-x64/native/detours.lib" />
+    <file src="../detours/lib.X64/detours.pdb" target="static/win-x64/native/detours.pdb" />
     <file src="../detours-dll/bin.X64/detours.dll" target="runtimes/win-x64/native/detours.dll" />
     <file src="../detours/lib.X86/detours.lib" target="static/win-x86/native/detours.lib" />
+    <file src="../detours/lib.X86/detours.pdb" target="static/win-x86/native/detours.pdb" />
     <file src="../detours-dll/bin.X86/detours.dll" target="runtimes/win-x86/native/detours.dll" />
   </files>
 </package>
