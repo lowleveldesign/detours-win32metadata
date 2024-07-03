@@ -1,22 +1,31 @@
 @echo off
 
-if "%1"=="" (
+if "%1" == "" (
     echo Missing platform
-    exit /b
+    exit /b -1
 )
 
-if "%1" == "arm" (
+if /i "%1" == "arm" (
     set "vc_arch=x86_arm"
-) else if "%1" == "arm64" (
+) else if /i "%1" == "arm64" (
     set "vc_arch=x86_arm64"
 ) else (
     set "vc_arch=%1"
 )
 
-if EXIST "c:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" (
-    call "c:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" %vc_arch%
+if exist "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" (
+    call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" %vc_arch%
+) else if exist "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" (
+    call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" %vc_arch%
+) else if exist "C:\Program Files\Microsoft Visual Studio\2022\Preview\VC\Auxiliary\Build\vcvarsall.bat" (
+    call "C:\Program Files\Microsoft Visual Studio\2022\Preview\VC\Auxiliary\Build\vcvarsall.bat" %vc_arch%
 ) else (
-    call "c:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" %vc_arch%
+    echo vcvarsall.bat not found
+    exit /b -1
+)
+
+if exist bin.%1 (
+    rmdir /S /Q bin.%1
 )
 
 mkdir bin.%1
