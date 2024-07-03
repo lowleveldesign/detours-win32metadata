@@ -20,10 +20,46 @@ jobs:
 
     - uses: ilammy/msvc-dev-cmd@v1
       with:
+        arch: x86_arm
+        vsversion: 2022
+
+    - name: Build detours (ARM)
+      run: nmake
+      working-directory: detours/src
+
+    - name: Build the detours DLL
+      working-directory: detours-dll
+      run: |
+        mkdir bin.ARM
+        pushd bin.ARM
+        cl.exe /nologo /LD /TP /DUNICODE /DWIN32 /D_WINDOWS /EHsc /W4 /WX /Zi /O2 /Ob1 /DNDEBUG /Fodetours.obj /Fddetours.pdb ..\detours.cpp ^
+            /link /def:..\detours.def "%GITHUB_WORKSPACE%\detours\lib.ARM\detours.lib"
+        popd
+
+    - uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x86_arm64
+        vsversion: 2022
+
+    - name: Build detours (ARM64)
+      run: nmake
+      working-directory: detours/src
+
+    - name: Build the detours DLL
+      working-directory: detours-dll
+      run: |
+        mkdir bin.ARM64
+        pushd bin.ARM64
+        cl.exe /nologo /LD /TP /DUNICODE /DWIN32 /D_WINDOWS /EHsc /W4 /WX /Zi /O2 /Ob1 /DNDEBUG /Fodetours.obj /Fddetours.pdb ..\detours.cpp ^
+            /link /def:..\detours.def "%GITHUB_WORKSPACE%\detours\lib.ARM64\detours.lib"
+        popd
+
+    - uses: ilammy/msvc-dev-cmd@v1
+      with:
         arch: x86
         vsversion: 2022
 
-    - name: Build detours
+    - name: Build detours (x86)
       run: nmake
       working-directory: detours/src
 
@@ -41,7 +77,7 @@ jobs:
         arch: x64
         vsversion: 2022
 
-    - name: Build detours
+    - name: Build detours (x64)
       run: nmake
       working-directory: detours/src
 

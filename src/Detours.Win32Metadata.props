@@ -8,5 +8,7 @@
     <DirectPInvoke Include="detours" />
     <NativeLibrary Condition="'$(ProcessorArchitecture)' == 'x86'" Include="$(MSBuildThisFileDirectory)..\static\win-x86\native\detours.lib" />
     <NativeLibrary Condition="'$(ProcessorArchitecture)' == 'amd64'" Include="$(MSBuildThisFileDirectory)..\static\win-x64\native\detours.lib" />
+    <NativeLibrary Condition="'$(ProcessorArchitecture)' == 'arm'" Include="$(MSBuildThisFileDirectory)..\static\win-arm\native\detours.lib" />
+    <NativeLibrary Condition="'$(ProcessorArchitecture)' == 'arm64'" Include="$(MSBuildThisFileDirectory)..\static\win-arm64\native\detours.lib" />
   </ItemGroup>
 </Project>
