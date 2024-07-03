@@ -25,7 +25,7 @@ if exist "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxi
 )
 
 if exist bin.%1 (
-    @rmdir /S /Q bin.%1
+    rmdir /S /Q bin.%1
 )
 
 mkdir bin.%1

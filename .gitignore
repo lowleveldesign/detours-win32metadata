@@ -355,8 +355,8 @@ src/winmd
 
 bin.X64/
 bin.X86/
-bin.ARM/
 bin.ARM64/
+bin.ARM/
 
 !src/options.rsp
 
