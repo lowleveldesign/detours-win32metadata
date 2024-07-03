@@ -27,15 +27,18 @@
     <file src="../detours/lib.X64/detours.lib" target="static/win-x64/native/detours.lib" />
     <file src="../detours/lib.X64/detours.pdb" target="static/win-x64/native/detours.pdb" />
     <file src="../detours-dll/bin.X64/detours.dll" target="runtimes/win-x64/native/detours.dll" />
-    <file src="../detours-dll/bin.X64/detours.pdb" target="runtimes/win-x64/native/detours.dll" />
+    <file src="../detours-dll/bin.X64/detours.pdb" target="runtimes/win-x64/native/detours.pdb" />
     <file src="../detours/lib.X86/detours.lib" target="static/win-x86/native/detours.lib" />
     <file src="../detours/lib.X86/detours.pdb" target="static/win-x86/native/detours.pdb" />
     <file src="../detours-dll/bin.X86/detours.dll" target="runtimes/win-x86/native/detours.dll" />
+    <file src="../detours-dll/bin.X86/detours.pdb" target="runtimes/win-x86/native/detours.pdb" />
     <file src="../detours/lib.ARM/detours.lib" target="static/win-arm/native/detours.lib" />
     <file src="../detours/lib.ARM/detours.pdb" target="static/win-arm/native/detours.pdb" />
     <file src="../detours-dll/bin.ARM/detours.dll" target="runtimes/win-arm/native/detours.dll" />
+    <file src="../detours-dll/bin.ARM/detours.pdb" target="runtimes/win-arm/native/detours.pdb" />
     <file src="../detours/lib.ARM64/detours.lib" target="static/win-arm64/native/detours.lib" />
     <file src="../detours/lib.ARM64/detours.pdb" target="static/win-arm64/native/detours.pdb" />
     <file src="../detours-dll/bin.ARM64/detours.dll" target="runtimes/win-arm64/native/detours.dll" />
+    <file src="../detours-dll/bin.ARM64/detours.pdb" target="runtimes/win-arm64/native/detours.pdb" />
   </files>
 </package>
