@@ -37,41 +37,6 @@ DetourCreateProcessWithDllsW
 
 Please also check the [cswin32 project README file](https://github.com/microsoft/CsWin32/blob/main/README.md) for other configuration options of the PInvoke generators.
 
-3. You are ready to use the native functions in your code :) Below is an example code from my [withdll project](https://github.com/lowleveldesign/withdll) that uses the Detours.Win32Metadata package to start a new process with an injected DLL:
+3. You are ready to use the native functions in your code :)
 
-```cs
-using PInvokeDetours = Microsoft.Detours.PInvoke;
-using PInvokeWin32 = Windows.Win32.PInvoke;
-
-unsafe
-{
-    var startupInfo = new STARTUPINFOW() { cb = (uint)sizeof(STARTUPINFOW) };
-
-    var cmdline = new Span<char>(ConvertStringListToNullTerminatedArray(cmdlineArgs));
-    uint createFlags = debug ? (uint)PROCESS_CREATION_FLAGS.DEBUG_ONLY_THIS_PROCESS : 0;
-
-    var pcstrs = dllPaths.Select(path => new PCSTR((byte*)Marshal.StringToHGlobalAnsi(path))).ToArray();
-
-    try
-    {
-        if (!PInvokeDetours.DetourCreateProcessWithDlls(null, ref cmdline, null, null, false,
-            createFlags, null, null, startupInfo, out var processInfo,
-            pcstrs, null))
-        {
-            throw new Win32Exception();
-        }
-
-        PInvokeWin32.CloseHandle(processInfo.hThread);
-        PInvokeWin32.CloseHandle(processInfo.hProcess);
-
-        if (debug)
-        {
-            PInvokeWin32.DebugActiveProcessStop(processInfo.dwProcessId);
-        }
-    }
-    finally
-    {
-        Array.ForEach(pcstrs, pcstr => Marshal.FreeHGlobal((nint)pcstr.Value));
-    }
-}
-```
+Please check [a blog post](https://lowleveldesign.wordpress.com/2024/07/11/implementing-a-native-function-detour-in-csharp/) on my blog where I present how to create a native function hook using Detours.Win32Metadata. My other project, [withdll](https://github.com/lowleveldesign/withdll), also uses this package to start a new process with an injected DLL.
