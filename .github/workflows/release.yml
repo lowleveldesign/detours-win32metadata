@@ -6,118 +6,111 @@ on:
       - '*'
 
 jobs:
-  build-and-publish:
+  build-detours:
     runs-on: windows-latest
     defaults:
       run:
         shell: cmd
-    
+
+    strategy:
+      matrix:
+        arch:
+          - vs_name: amd64
+            detours_name: X64
+          - vs_name: amd64_x86
+            detours_name: X86
+          - vs_name: amd64_arm
+            detours_name: ARM
+          - vs_name: amd64_arm64
+            detours_name: ARM64
+
     steps:
-    - uses: actions/checkout@main
-      with:
-        fetch-depth: 1
-        submodules: true
+      - uses: actions/checkout@main
+        with:
+          fetch-depth: 1
+          submodules: true
 
-    - uses: ilammy/msvc-dev-cmd@v1
-      with:
-        arch: x86_arm
-        vsversion: 2022
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.arch.vs_name }}
+          sdk: 10.0.22621.0
+          vsversion: 2022
 
-    - name: Build detours (ARM)
-      run: nmake
-      working-directory: detours/src
+      - name: Build detours (${{ matrix.arch.vs_name }})
+        run: nmake
+        working-directory: detours/src
 
-    - name: Build the detours DLL
-      working-directory: detours-dll
-      run: |
-        mkdir bin.ARM
-        pushd bin.ARM
-        cl.exe /nologo /LD /TP /DUNICODE /DWIN32 /D_WINDOWS /EHsc /W4 /WX /Zi /O2 /Ob1 /DNDEBUG /Fodetours.obj /Fddetours.pdb ..\detours.cpp ^
-            /link /def:..\detours.def "%GITHUB_WORKSPACE%\detours\lib.ARM\detours.lib"
-        popd
+      - name: Build the detours DLL (${{ matrix.arch.vs_name }})
+        working-directory: detours-dll
+        run: |
+          mkdir bin
+          pushd bin
+          cl.exe /nologo /LD /TP /DUNICODE /DWIN32 /D_WINDOWS /EHsc /W4 /WX /Zi /O2 /Ob1 /DNDEBUG /Fodetours.obj /Fddetours.pdb ..\detours.cpp ^
+              /link /def:..\detours.def "%GITHUB_WORKSPACE%\detours\lib.${{ matrix.arch.detours_name }}\detours.lib"
+          popd
 
-    - uses: ilammy/msvc-dev-cmd@v1
-      with:
-        arch: x86_arm64
-        vsversion: 2022
+      - uses: actions/upload-artifact@main
+        with:
+          name: bin.${{ matrix.arch.detours_name }}
+          path: detours-dll/bin
+      
+      - uses: actions/upload-artifact@main
+        with:
+          name: lib.${{ matrix.arch.detours_name }}
+          path: detours/lib.${{ matrix.arch.detours_name }}
 
-    - name: Build detours (ARM64)
-      run: nmake
-      working-directory: detours/src
+  
+  build-and-publish-metadata:
+    needs: build-detours
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: cmd
 
-    - name: Build the detours DLL
-      working-directory: detours-dll
-      run: |
-        mkdir bin.ARM64
-        pushd bin.ARM64
-        cl.exe /nologo /LD /TP /DUNICODE /DWIN32 /D_WINDOWS /EHsc /W4 /WX /Zi /O2 /Ob1 /DNDEBUG /Fodetours.obj /Fddetours.pdb ..\detours.cpp ^
-            /link /def:..\detours.def "%GITHUB_WORKSPACE%\detours\lib.ARM64\detours.lib"
-        popd
+    steps:
+      - uses: actions/checkout@main
+        with:
+          fetch-depth: 1
+          submodules: true
+      
+      - uses: actions/download-artifact@main
+        with:
+          pattern: bin.*
+          path: detours-dll
 
-    - uses: ilammy/msvc-dev-cmd@v1
-      with:
-        arch: x86
-        vsversion: 2022
+      - uses: actions/download-artifact@main
+        with:
+          pattern: lib.*
+          path: detours
 
-    - name: Build detours (x86)
-      run: nmake
-      working-directory: detours/src
+      - uses: actions/setup-dotnet@main
+        with:
+          dotnet-version: 8.0.x
 
-    - name: Build the detours DLL
-      working-directory: detours-dll
-      run: |
-        mkdir bin.X86
-        pushd bin.X86
-        cl.exe /nologo /LD /TP /DUNICODE /DWIN32 /D_WINDOWS /EHsc /W4 /WX /Zi /O2 /Ob1 /DNDEBUG /Fodetours.obj /Fddetours.pdb ..\detours.cpp ^
-            /link /def:..\detours.def "%GITHUB_WORKSPACE%\detours\lib.X86\detours.lib"
-        popd
+      - name: Apply detours.h patch
+        shell: pwsh
+        run: "@(Get-Content \".\\detours\\src\\detours.h\")[0..866+920..1234] | Set-Content \".\\src\\detours.h\""
 
-    - uses: ilammy/msvc-dev-cmd@v1
-      with:
-        arch: x64
-        vsversion: 2022
+      - run: |
+          Invoke-WebRequest -OutFile Update-AssemblyInfoVersionFiles.ps1 https://gist.githubusercontent.com/lowleveldesign/663de4e0d5a071f938e6f7c82d7ca9a0/raw/Update-AssemblyInfoVersionFiles.ps1
+          ./Update-AssemblyInfoVersionFiles.ps1
+        shell: pwsh
 
-    - name: Build detours (x64)
-      run: nmake
-      working-directory: detours/src
+      - name: Build detours metadata
+        working-directory: src
+        run: dotnet build -c Release -p:GeneratePackageOnBuild=true
 
-    - name: Build the detours DLL
-      working-directory: detours-dll
-      run: |
-        mkdir bin.X64
-        pushd bin.X64
-        cl.exe /nologo /LD /TP /DUNICODE /DWIN32 /D_WINDOWS /EHsc /W4 /WX /Zi /O2 /Ob1 /DNDEBUG /Fodetours.obj /Fddetours.pdb ..\detours.cpp ^
-            /link /def:..\detours.def "%GITHUB_WORKSPACE%\detours\lib.X64\detours.lib"
-        popd
+      - run: dotnet nuget push -s https://api.nuget.org/v3/index.json -k "$env:NUGET_KEY" Detours.Win32Metadata.*.nupkg
+        shell: pwsh
+        env:
+          NUGET_KEY: ${{ secrets.NUGET_KEY }}
+        working-directory: src/bin/Release
 
-    - uses: actions/setup-dotnet@main
-      with:
-        dotnet-version: 8.0.x
+      - uses: actions/upload-artifact@main
+        with:
+          name: Detours.winmd
+          path: src/winmd/Detours.winmd
 
-    - name: Apply detours.h patch
-      shell: pwsh
-      run: "@(Get-Content \".\\detours\\src\\detours.h\")[0..866+920..1234] | Set-Content \".\\src\\detours.h\""
-
-    - run: |
-        Invoke-WebRequest -OutFile Update-AssemblyInfoVersionFiles.ps1 https://gist.githubusercontent.com/lowleveldesign/663de4e0d5a071f938e6f7c82d7ca9a0/raw/Update-AssemblyInfoVersionFiles.ps1
-        ./Update-AssemblyInfoVersionFiles.ps1
-      shell: pwsh
-
-    - name: Build detours metadata
-      working-directory: src
-      run: dotnet build -c Release -p:GeneratePackageOnBuild=true
-
-    - run: dotnet nuget push -s https://api.nuget.org/v3/index.json -k "$env:NUGET_KEY" Detours.Win32Metadata.*.nupkg
-      shell: pwsh
-      env:
-        NUGET_KEY: ${{ secrets.NUGET_KEY }}
-      working-directory: src/bin/x64/Release
-
-    - uses: actions/upload-artifact@main
-      with:
-        name: Detours.winmd
-        path: src/winmd/Detours.winmd
-
-    - uses: actions/upload-artifact@main
-      with:
-        path: src/bin/x64/Release/Detours.Win32Metadata.*.nupkg
+      - uses: actions/upload-artifact@main
+        with:
+          path: src/bin/Release/Detours.Win32Metadata.*.nupkg
