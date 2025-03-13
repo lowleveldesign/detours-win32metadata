@@ -113,4 +113,5 @@ jobs:
 
       - uses: actions/upload-artifact@main
         with:
+          name: Nuget package
           path: src/bin/Release/Detours.Win32Metadata.*.nupkg
